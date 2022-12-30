@@ -107,7 +107,7 @@ class RandomSolver(Solver):
         for i, reveled_row in enumerate(self.reveled_board):
             print(f"{''.join(reveled_row)}\t{''.join(self.pairs_board[i])}")
     #####################
-    
+
     def _generate_random_moves(self, rows: int , columns: int) -> list:
         """ Generate list of random moves/picks """
         moves = [(x, y) for x in range(rows) for y in range(columns)]
@@ -124,7 +124,7 @@ class RandomSolver(Solver):
         #### DEBUG VARIABLES ####
         self.reveled_board = [["."]*board.columns for _ in range(board.rows)]
         self.pairs_board = [["."]*board.columns for _ in range(board.rows)]
-        
+
         while not board.complete:
             # known moves
             if next_pair:

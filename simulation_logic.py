@@ -44,10 +44,12 @@ if __name__ == "__main__":
 
     filename = f"{{}}-{ARGS.number_boards}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.csv"
     # create outputs files pointers
-    with open(filename.format("sequential"), "w", encoding="utf8") as seqfp:
+    with open(filename.format("sequential"), "w", encoding="utf8") as seqfp, \
+        open(filename.format("random"), "w", encoding="utf8") as radfp:
 
         solvers_list = [
-            (solvers.SequentialSolver(), seqfp)
+            (solvers.SequentialSolver(), seqfp),
+            (solvers.RandomSolver(), radfp)
         ]
         # Add header to output files
         for _, fp in solvers_list:
@@ -61,5 +63,4 @@ if __name__ == "__main__":
                 board.generate_new_board()
                 solver.guesses = 0
                 solver.wrong_guesses = 0
-
             print()
