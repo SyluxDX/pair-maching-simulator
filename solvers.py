@@ -20,6 +20,9 @@ class Solver:
         self.guesses = 0
         self.wrong_guesses = 0
 
+class SolverExecption(Exception):
+    """ Solvers generic execption """
+
 class SequentialSolver(Solver):
     """ Sequential Solver """
     name = "Sequential Solver"
@@ -98,15 +101,6 @@ class RandomSolver(Solver):
     name = "Random Solver"
     row: int
     column: int
-    reveled_board: list
-    pairs_board: list
-
-    ## DEBUG FUNCTION ###
-    def debug_print(self) -> None:
-        """ debug print """
-        for i, reveled_row in enumerate(self.reveled_board):
-            print(f"{''.join(reveled_row)}\t{''.join(self.pairs_board[i])}")
-    #####################
 
     def _generate_random_moves(self, rows: int , columns: int) -> list:
         """ Generate list of random moves/picks """
@@ -116,11 +110,92 @@ class RandomSolver(Solver):
 
     def solve(self, board: Board) -> None:
         """ solver board """
-        # self.row = 0
-        # self.column = 0
         known_pairs = {}
         next_pair = []
         moves = self._generate_random_moves(board.rows, board.columns)
+
+        while not board.complete:
+            # known moves
+            if next_pair:
+                first, second = next_pair.pop(0)
+                _ = board.flip_card(first[0], first[1])
+                _ = board.flip_card(second[0], second[1])
+
+            # unknown/discover moves
+            else:
+                # first flip
+                # Get next move
+                row, column = moves.pop(0)
+                first_flip = board.flip_card(row, column)
+                # print("first_flip", first_flip)
+                first_pos = (row, column)
+
+
+                # check if it is a already known pair
+                if first_flip in known_pairs:
+                    second_flip = board.flip_card(
+                        known_pairs[first_flip][0],
+                        known_pairs[first_flip][1],
+                    )
+
+                else:
+                    # Get next move
+                    row, column = moves.pop(0)
+                    second_flip = board.flip_card(row, column)
+
+                    if first_flip == second_flip:
+                        # lucky guess
+                        pass
+                    else:
+                        # increase wrong guesses
+                        self.wrong_guesses += 1
+
+                        #check first move
+                        if first_flip in known_pairs:
+                            next_pair.append((first_pos, known_pairs[first_flip]))
+                        else:
+                            known_pairs[first_flip] = first_pos
+                        #check seconds move
+                        if second_flip in known_pairs:
+                            next_pair.append(((row, column), known_pairs[second_flip]))
+                        else:
+                            known_pairs[second_flip] = (row, column)
+
+                    # move cursor, if cursor reaches the end check if board is complete
+                    if len(moves) == 0 and not board.complete:
+                        raise Exception("Board not completed. Something went wrong.")
+
+            # Increase guesses
+            self.guesses += 1
+
+class YornShakeSolver(Solver):
+    """ Yorn Shake selection Solver """
+    name = "Yorn Shake Solver"
+    row: int
+    column: int
+    reveled_board: list
+    pairs_board: list
+    moves = [
+        (2, 1), (1, 2), (1, 1), (2, 2), (1, 0), (2, 0), (1, 3), (2, 3),
+        (3, 0), (3, 1), (3, 2), (3, 3), (0, 0), (0, 1), (0, 2), (0, 3),
+    ]
+
+    ## DEBUG FUNCTION ###
+    def debug_print(self) -> None:
+        """ debug print """
+        for i, reveled_row in enumerate(self.reveled_board):
+            print(f"{''.join(reveled_row)}\t{''.join(self.pairs_board[i])}")
+    #####################
+
+    def solve(self, board: Board) -> None:
+        """ solver board """
+        if not board.rows == board.columns == 4:
+            raise SolverExecption("Board of size 4 by 4 required to execute this solver")
+
+        moves_cursor = 0
+        known_pairs = {}
+        next_pair = []
+
         #### DEBUG VARIABLES ####
         self.reveled_board = [["."]*board.columns for _ in range(board.rows)]
         self.pairs_board = [["."]*board.columns for _ in range(board.rows)]
@@ -137,10 +212,10 @@ class RandomSolver(Solver):
             # unknown/discover moves
             else:
                 # first flip
-                # Get next move
-                row, column = moves.pop(0)
+                # Get next move and increment cursor
+                row, column = self.moves[moves_cursor]
+                moves_cursor += 1
                 first_flip = board.flip_card(row, column)
-                # print("first_flip", first_flip)
                 first_pos = (row, column)
 
                 self.reveled_board[row][column] = first_flip
@@ -157,7 +232,8 @@ class RandomSolver(Solver):
                     self.pairs_board[known_pairs[first_flip][0]][known_pairs[first_flip][1]] = second_flip
                 else:
                     # Get next move
-                    row, column = moves.pop(0)
+                    row, column = self.moves[moves_cursor]
+                    moves_cursor += 1
                     second_flip = board.flip_card(row, column)
 
                     self.reveled_board[row][column] = second_flip
@@ -182,7 +258,7 @@ class RandomSolver(Solver):
                             known_pairs[second_flip] = (row, column)
 
                     # move cursor, if cursor reaches the end check if board is complete
-                    if len(moves) == 0 and not board.complete:
+                    if moves_cursor == len(self.moves) and not board.complete:
                         raise Exception("Board not completed. Something went wrong.")
 
             # Increase guesses

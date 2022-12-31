@@ -45,17 +45,23 @@ if __name__ == "__main__":
     filename = f"{{}}-{ARGS.number_boards}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.csv"
     # create outputs files pointers
     with open(filename.format("sequential"), "w", encoding="utf8") as seqfp, \
-        open(filename.format("random"), "w", encoding="utf8") as radfp:
+        open(filename.format("random"), "w", encoding="utf8") as radfp, \
+        open(filename.format("yorn"), "w", encoding="utf8") as yornfp:
 
         solvers_list = [
             (solvers.SequentialSolver(), seqfp),
-            (solvers.RandomSolver(), radfp)
+            (solvers.RandomSolver(), radfp),
+            (solvers.YornShakeSolver(), yornfp),
         ]
         # Add header to output files
         for _, fp in solvers_list:
             fp.write("Number_guesses;wrong_guesses\n")
         # Simulations
         for solver, fp in solvers_list:
+            if solver.name == "Yorn Shake Solver" and board.rows == board.columns != 4:
+                print("Skiping Yorn solver since board isn't the required size")
+                continue
+                
             for n in range(ARGS.number_boards):
                 print(f"Simulating {n+1}/{ARGS.number_boards} for {solver.name}", end="\r")
                 solver.solve(board)

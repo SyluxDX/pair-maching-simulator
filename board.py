@@ -14,7 +14,6 @@ class Board:
     last_flip = None
     pair_founds = set()
     complete_board = None
-    show_board = None
 
     def set_board_size(self, row_size: int, column_size: int) -> None:
         """ Set board size. Raise erros if size too big or odd number """
