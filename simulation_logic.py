@@ -42,7 +42,9 @@ if __name__ == "__main__":
     # Create board with specified size
     board = board.Board(ROWS, COLUMNS)
 
-    filename = f"{{}}-{ARGS.number_boards}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.csv"
+    filename = (f"{{}}-{ARGS.number_boards}-{board.rows}x{board.columns}-"
+        f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.csv")
+
     # create outputs files pointers
     with open(filename.format("sequential"), "w", encoding="utf8") as seqfp, \
         open(filename.format("random"), "w", encoding="utf8") as radfp, \
@@ -61,7 +63,7 @@ if __name__ == "__main__":
             if solver.name == "Yorn Shake Solver" and board.rows == board.columns != 4:
                 print("Skiping Yorn solver since board isn't the required size")
                 continue
-                
+
             for n in range(ARGS.number_boards):
                 print(f"Simulating {n+1}/{ARGS.number_boards} for {solver.name}", end="\r")
                 solver.solve(board)
